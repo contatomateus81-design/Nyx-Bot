@@ -12,7 +12,7 @@ Um bot de WhatsApp MD construído com Node.js e Baileys, com comandos para membr
 
 - Node.js 20 ou superior.
 - Uma conta do WhatsApp para vincular ao bot.
-- Uma chave da OpenAI somente se quiser ativar os recursos de IA.
+- Uma chave da OpenAI somente se quiser ativar os recursos de IA (opcional).
 
 ## Instalação
 
@@ -29,6 +29,8 @@ OWNER_NUMBERS=5511999999999
 
 OPENAI_API_KEY=sua_chave_aqui
 OPENAI_MODEL=gpt-5.6-luna
+OPENAI_TRANSCRIBE_MODEL=gpt-4o-mini-transcribe
+AI_AUTO=false
 ```
 
 **Nunca publique o arquivo `.env` nem a chave da API no GitHub.**
@@ -49,6 +51,7 @@ O primeiro vínculo pode usar o **pairing code** exibido no terminal. A sessão 
 - `!menu` — mostra os comandos.
 - `!ia <mensagem>` — conversa com a IA e mantém contexto recente.
 - `!resumir` — resume o contexto recente da conversa.
+- `!transcrever` — transcreve um áudio enviado ou respondido.
 - `!memoria` — mostra o estado da memória.
 - `!memoria limpar` — apaga a memória da conversa.
 - `!lembrar YYYY-MM-DD HH:MM <texto>` — cria um lembrete.
@@ -62,6 +65,7 @@ O primeiro vínculo pode usar o **pairing code** exibido no terminal. A sessão 
 ### Dono
 
 - `!status` — mostra o status do Nyx.
+- `!modoia on|off` — liga/desliga o modo de conversa automática em chats privados.
 
 ## Recursos de IA
 
