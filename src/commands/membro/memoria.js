@@ -4,10 +4,11 @@ export default {
   name: 'memoria',
   aliases: ['memory'],
   description: 'Mostra ou apaga a memória desta conversa.',
+  menuCategory: 'principal',
   execute: async ({ sock, jid, args }) => {
     if (args[0]?.toLowerCase() === 'limpar') {
       await clearMemory(jid)
-      await sock.sendMessage(jid, { text: '🧹 Memória desta conversa apagada.' })
+      await sock.sendMessage(jid, { text: '🧹 A memória desta conversa foi apagada.' })
       return
     }
 
