@@ -1,9 +1,9 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
+import { MEMORY_FILE } from '../config.js'
 
-const file = process.env.MEMORY_FILE || './sessions/nyx/memory.json'
+const file = MEMORY_FILE
 const maxMessages = 40
-
 let memory = {}
 
 async function save() {
@@ -26,7 +26,6 @@ export function getHistory(jid) {
 
 export async function addMessage(jid, role, content) {
   if (!content?.trim()) return
-
   if (!memory[jid]) memory[jid] = { messages: [] }
 
   memory[jid].messages.push({
