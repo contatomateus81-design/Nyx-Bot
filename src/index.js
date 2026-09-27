@@ -45,7 +45,7 @@ async function startBot() {
       pairingRequested = true
 
       try {
-        const code = await sock.requestPairingCode(config.phoneNumber)
+        const code = await sock.requestPairingCode(PHONE_NUMBER)
         logger.info(`Pairing code: ${code}`)
       } catch (error) {
         pairingRequested = false
@@ -53,13 +53,13 @@ async function startBot() {
       }
     }
 
-    if (!state.creds.registered && !config.phoneNumber && qr) {
+    if (!state.creds.registered && !PHONE_NUMBER && qr) {
       logger.info('Escaneie o QR code abaixo para conectar o WhatsApp:')
       qrcode.generate(qr, { small: true })
     }
 
     if (connection === 'open') {
-      logger.info('${BOT_NAME} conectado ao WhatsApp.')
+      logger.info(`${BOT_NAME} conectado ao WhatsApp.`)
       return
     }
 
@@ -160,7 +160,7 @@ async function startBot() {
           args: commandData.args,
           rawArgs: commandData.rawArgs,
           commands,
-          prefix: config.prefix,
+          prefix: PREFIX,
           isGroup,
           isOwner,
           isAdmin,
