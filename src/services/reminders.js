@@ -1,8 +1,9 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { randomUUID } from 'node:crypto'
+import { REMINDERS_FILE } from '../config.js'
 
-const file = process.env.REMINDERS_FILE || './sessions/nyx/reminders.json'
+const file = REMINDERS_FILE
 let reminders = []
 let sendMessage = null
 const timers = new Map()
@@ -25,9 +26,7 @@ function schedule(reminder) {
     }
 
     try {
-      await sendMessage(reminder.jid, {
-        text: `⏰ Lembrete: ${reminder.text}`
-      })
+      await sendMessage(reminder.jid, { text: '⏰ Lembrete: ' + reminder.text })
     } finally {
       reminders = reminders.filter((item) => item.id !== reminder.id)
       await save()
@@ -59,13 +58,7 @@ export async function createReminder({ jid, text, at }) {
     throw new Error('A data do lembrete precisa estar no futuro.')
   }
 
-  const reminder = {
-    id: randomUUID(),
-    jid,
-    text: text.trim(),
-    at
-  }
-
+  const reminder = { id: randomUUID(), jid, text: text.trim(), at }
   reminders.push(reminder)
   await save()
   schedule(reminder)
@@ -79,12 +72,14 @@ export async function listReminders(jid) {
 }
 
 export async function cancelReminder(jid, id) {
-  const reminder = reminders.find((item) => item.jid === jid && (item.id === id || item.id.startsWith(id)))
+  const reminder = reminders.find(
+    (item) => item.jid === jid && (item.id === id || item.id.startsWith(id))
+  )
   if (!reminder) return false
 
-  clearTimeout(timers.get(id))
-  timers.delete(id)
-  reminders = reminders.filter((item) => item.id !== id)
+  clearTimeout(timers.get(reminder.id))
+  timers.delete(reminder.id)
+  reminders = reminders.filter((item) => item.id !== reminder.id)
   await save()
   return true
 }
