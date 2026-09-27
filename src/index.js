@@ -12,6 +12,9 @@ import { loadCommands } from './commands/loader.js'
 import { getCommandText, parseCommand } from './utils/command.js'
 import { initMemory } from './services/memory.js'
 import { initReminders } from './services/reminders.js'
+import { aiEnabled, askAI } from './services/ai.js'
+import { getHistory, addMessage } from './services/memory.js'
+import { isAutoAIEnabled } from './services/ai-mode.js'
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
 
@@ -87,7 +90,25 @@ async function startBot() {
 
         const text = getCommandText(message)
         const commandData = parseCommand(text, config.prefix)
-        if (!commandData) continue
+        if (!commandData) {
+          if (isAutoAIEnabled() && aiEnabled() && !jid.endsWith('@g.us') && text) {
+            try {
+              const history = getHistory(jid).slice(-12)
+              const answer = await askAI({
+                prompt: text,
+                context: history,
+                system: 'Você é Nyx, um assistente de WhatsApp amigável, natural e objetivo. Responda em português do Brasil, a menos que o usuário peça outro idioma.'
+              })
+
+              await addMessage(jid, 'user', text)
+              await addMessage(jid, 'assistant', answer)
+              await sock.sendMessage(jid, { text: `🟣 Nyx\\n\\n${answer}` })
+            } catch (error) {
+              logger.error({ err: error }, 'Erro no modo IA automático.')
+            }
+          }
+          continue
+        }
 
         const command = commands.get(commandData.name)
         if (!command) continue
