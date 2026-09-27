@@ -18,6 +18,12 @@ function schedule(reminder) {
 
   const timer = setTimeout(async () => {
     timers.delete(reminder.id)
+
+    if (reminder.at - Date.now() > 0) {
+      schedule(reminder)
+      return
+    }
+
     try {
       await sendMessage(reminder.jid, {
         text: `⏰ Lembrete: ${reminder.text}`
