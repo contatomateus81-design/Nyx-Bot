@@ -4,12 +4,11 @@ import { getHistory } from '../../services/memory.js'
 export default {
   name: 'resumir',
   aliases: ['resumo', 'summary'],
-  description: 'Resume o contexto recente salvo pelo Nyx.',
+  description: 'Resume o contexto recente salvo pela Nyx.',
+  menuCategory: 'ia',
   execute: async ({ sock, jid }) => {
     if (!aiEnabled()) {
-      await sock.sendMessage(jid, {
-        text: '⚠️ A IA ainda não está configurada. Defina OPENAI_API_KEY no .env.'
-      })
+      await sock.sendMessage(jid, { text: '⚠️ A IA ainda não está configurada. Defina OPENAI_API_KEY no .env.' })
       return
     }
 
@@ -23,10 +22,10 @@ export default {
       const answer = await askAI({
         prompt: 'Faça um resumo curto e organizado do contexto abaixo, destacando assuntos, decisões e pendências. Não invente informações.',
         context: history,
-        system: 'Você é um resumidor de conversas. Responda em português do Brasil.'
+        system: 'Você é uma assistente que resume conversas. Responda em português do Brasil.'
       })
 
-      await sock.sendMessage(jid, { text: `📝 Resumo\n\n${answer}` })
+      await sock.sendMessage(jid, { text: `📝 Resumo da Nyx\n\n${answer}` })
     } catch (error) {
       await sock.sendMessage(jid, { text: `❌ Não consegui gerar o resumo.\n\n${error.message}` })
     }
