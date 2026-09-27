@@ -1,4 +1,6 @@
-let enabled = process.env.AI_AUTO === 'true'
+import { AI_AUTO } from '../config.js'
+
+let enabled = AI_AUTO
 
 export function isAutoAIEnabled() {
   return enabled
