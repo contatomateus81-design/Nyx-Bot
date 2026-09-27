@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer'
+import { OPENAI_API_KEY, OPENAI_TRANSCRIBE_MODEL } from '../config.js'
 
 const API_URL = 'https://api.openai.com/v1/audio/transcriptions'
 
@@ -9,12 +10,12 @@ async function streamToBuffer(stream) {
 }
 
 export function transcriptionEnabled() {
-  return Boolean(process.env.OPENAI_API_KEY?.trim())
+  return Boolean(OPENAI_API_KEY?.trim())
 }
 
 export async function transcribeAudio({ downloadContentFromMessage, audioMessage }) {
   if (!transcriptionEnabled()) {
-    throw new Error('OPENAI_API_KEY não configurada.')
+    throw new Error('OPENAI_API_KEY não configurada em src/config.js.')
   }
 
   const stream = await downloadContentFromMessage(audioMessage, 'audio')
@@ -26,22 +27,19 @@ export async function transcribeAudio({ downloadContentFromMessage, audioMessage
     new Blob([buffer], { type: audioMessage.mimetype || 'audio/ogg' }),
     'audio.ogg'
   )
-  form.append(
-    'model',
-    process.env.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe'
-  )
+  form.append('model', OPENAI_TRANSCRIBE_MODEL)
 
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY.trim()}`
+      Authorization: 'Bearer ' + OPENAI_API_KEY.trim()
     },
     body: form
   })
 
   if (!response.ok) {
     const details = await response.text()
-    throw new Error(`Transcrição HTTP ${response.status}: ${details.slice(0, 500)}`)
+    throw new Error('Transcrição HTTP ' + response.status + ': ' + details.slice(0, 500))
   }
 
   const data = await response.json()
