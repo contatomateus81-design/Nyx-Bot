@@ -15,7 +15,7 @@ import { initReminders } from './services/reminders.js'
 import { aiEnabled, askAI } from './services/ai.js'
 import { isAutoAIEnabled } from './services/ai-mode.js'
 
-const logger = pino({ level: 'info' })
+const logger = pino({ level: 'error' })
 
 async function askForPhoneNumber() {
   const rl = readline.createInterface({
@@ -24,24 +24,24 @@ async function askForPhoneNumber() {
   })
 
   try {
-    const answer = (await rl.question('🟣 Nyx ativada! Digite seu numero para conectar (555599999999): ')).trim()
+    const answer = (await rl.question('Nyx ativada! Digite seu numero para conectar (555599999999): ')).trim()
     return answer.replace(/\D/g, '')
   } finally {
     rl.close()
   }
 }
 
-async function startBot() {
+async function startBot(savedPhoneNumber = '') {
   const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR)
   await initMemory()
 
-  let phoneNumber = PHONE_NUMBER
+  let phoneNumber = savedPhoneNumber || PHONE_NUMBER
 
   if (!state.creds.registered && !phoneNumber) {
     phoneNumber = await askForPhoneNumber()
 
     if (!phoneNumber) {
-      logger.error('Nenhum número informado. Execute npm start novamente.')
+      console.log('Nenhum número informado. Execute npm start novamente.')
       return
     }
   }
@@ -69,8 +69,17 @@ async function startBot() {
 
       try {
         const code = await sock.requestPairingCode(phoneNumber)
-        logger.info('Pairing code: ' + code)
-        logger.info('WhatsApp: Configurações > Dispositivos conectados > Conectar dispositivo > Conectar com número de telefone.')
+        const formattedCode = code.length === 8
+          ? code.slice(0, 4) + '-' + code.slice(4)
+          : code
+
+        console.log('')
+        console.log('Solicitação bem sucedida.')
+        console.log('Clique na notificação')
+        console.log('ou')
+        console.log('WhatsApp > Configurações > Dispositivos conectados > Conectar com um número de telefone')
+        console.log('E cole este código: ' + formattedCode)
+        console.log('')
       } catch (error) {
         pairingRequested = false
         logger.error({ err: error }, 'Não foi possível gerar o pairing code.')
@@ -78,7 +87,7 @@ async function startBot() {
     }
 
     if (connection === 'open') {
-      logger.info(BOT_NAME + ' conectado ao WhatsApp.')
+      console.log('Nyx conectada ao WhatsApp.')
       return
     }
 
@@ -86,12 +95,10 @@ async function startBot() {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut
 
-      logger.warn({ statusCode, shouldReconnect }, 'Conexão encerrada.')
-
       if (shouldReconnect) {
-        await startBot()
+        await startBot(phoneNumber)
       } else {
-        logger.error('Sessão encerrada. Apague a pasta sessions/nyx para vincular novamente.')
+        console.log('Sessão encerrada. Apague a pasta sessions/nyx para vincular novamente.')
       }
     }
   })
