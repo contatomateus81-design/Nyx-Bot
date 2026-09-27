@@ -1,8 +1,9 @@
 export default {
   name: 'ping',
   aliases: ['p'],
-  description: 'Verifica se o Nyx-Bot está respondendo.',
+  description: 'Verifica se a Nyx está respondendo.',
+  menuCategory: 'principal',
   execute: async ({ sock, jid }) => {
-    await sock.sendMessage(jid, { text: '🏓 Pong! Nyx-Bot está online.' })
+    await sock.sendMessage(jid, { text: '🏓 Pong! A Nyx está online.' })
   }
 }
