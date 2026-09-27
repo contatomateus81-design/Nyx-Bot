@@ -4,7 +4,6 @@ import makeWASocket, {
   useMultiFileAuthState
 } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
-import qrcode from 'qrcode-terminal'
 import pino from 'pino'
 
 import { BOT_NAME, OWNER_NUMBERS, PHONE_NUMBER, PREFIX, SESSION_DIR } from './config.js'
@@ -15,11 +14,17 @@ import { initReminders } from './services/reminders.js'
 import { aiEnabled, askAI } from './services/ai.js'
 import { isAutoAIEnabled } from './services/ai-mode.js'
 
-const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
+const logger = pino({ level: 'info' })
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR)
   await initMemory()
+
+  if (!state.creds.registered && !PHONE_NUMBER) {
+    logger.error('PHONE_NUMBER não configurado em src/config.js.')
+    logger.error('Preencha o número internacional, somente números, e execute npm start novamente.')
+    return
+  }
 
   const commands = await loadCommands()
   let pairingRequested = false
@@ -32,13 +37,11 @@ async function startBot() {
   })
 
   await initReminders((jid, content) => sock.sendMessage(jid, content))
-
   sock.ev.on('creds.update', saveCreds)
 
   sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
     if (
       !state.creds.registered &&
-      PHONE_NUMBER &&
       !pairingRequested &&
       (connection === 'connecting' || qr)
     ) {
@@ -46,20 +49,16 @@ async function startBot() {
 
       try {
         const code = await sock.requestPairingCode(PHONE_NUMBER)
-        logger.info(`Pairing code: ${code}`)
+        logger.info('Pairing code: ' + code)
+        logger.info('WhatsApp: Configurações > Dispositivos conectados > Conectar dispositivo > Conectar com número de telefone.')
       } catch (error) {
         pairingRequested = false
-        logger.error({ err: error }, 'Nao foi possivel gerar o pairing code.')
+        logger.error({ err: error }, 'Não foi possível gerar o pairing code.')
       }
     }
 
-    if (!state.creds.registered && !PHONE_NUMBER && qr) {
-      logger.info('Escaneie o QR code abaixo para conectar o WhatsApp:')
-      qrcode.generate(qr, { small: true })
-    }
-
     if (connection === 'open') {
-      logger.info(`${BOT_NAME} conectado ao WhatsApp.`)
+      logger.info(BOT_NAME + ' conectado ao WhatsApp.')
       return
     }
 
@@ -67,12 +66,12 @@ async function startBot() {
       const statusCode = new Boom(lastDisconnect?.error)?.output?.statusCode
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut
 
-      logger.warn({ statusCode, shouldReconnect }, 'Conexao encerrada.')
+      logger.warn({ statusCode, shouldReconnect }, 'Conexão encerrada.')
 
       if (shouldReconnect) {
         await startBot()
       } else {
-        logger.error('Sessao encerrada. Apague a pasta de sessao para vincular novamente.')
+        logger.error('Sessão encerrada. Apague a pasta sessions/nyx para vincular novamente.')
       }
     }
   })
@@ -89,6 +88,7 @@ async function startBot() {
 
         const text = getCommandText(message)
         const commandData = parseCommand(text, PREFIX)
+
         if (!commandData) {
           if (isAutoAIEnabled() && aiEnabled() && !jid.endsWith('@g.us') && text) {
             try {
@@ -101,7 +101,7 @@ async function startBot() {
 
               await addMessage(jid, 'user', text)
               await addMessage(jid, 'assistant', answer)
-              await sock.sendMessage(jid, { text: `🟣 Nyx\\n\\n${answer}` })
+              await sock.sendMessage(jid, { text: '🟣 Nyx\n\n' + answer })
             } catch (error) {
               logger.error({ err: error }, 'Erro no modo IA automático.')
             }
@@ -174,6 +174,6 @@ async function startBot() {
 }
 
 startBot().catch((error) => {
-  logger.error({ err: error }, `Falha fatal ao iniciar o ${BOT_NAME}.`)
+  logger.error({ err: error }, 'Falha fatal ao iniciar o ' + BOT_NAME + '.')
   process.exit(1)
 })
