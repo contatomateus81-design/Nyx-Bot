@@ -4,6 +4,7 @@ import makeWASocket, {
   useMultiFileAuthState
 } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
+import qrcode from 'qrcode-terminal'
 import pino from 'pino'
 
 import { config } from './config.js'
@@ -15,6 +16,7 @@ const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(config.sessionDir)
   const commands = await loadCommands()
+  let pairingRequested = false
 
   const sock = makeWASocket({
     auth: state,
@@ -25,7 +27,29 @@ async function startBot() {
 
   sock.ev.on('creds.update', saveCreds)
 
-  sock.ev.on('connection.update', async ({ connection, lastDisconnect }) => {
+  sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
+    if (
+      !state.creds.registered &&
+      config.phoneNumber &&
+      !pairingRequested &&
+      (connection === 'connecting' || qr)
+    ) {
+      pairingRequested = true
+
+      try {
+        const code = await sock.requestPairingCode(config.phoneNumber)
+        logger.info(`Pairing code: ${code}`)
+      } catch (error) {
+        pairingRequested = false
+        logger.error({ err: error }, 'Nao foi possivel gerar o pairing code.')
+      }
+    }
+
+    if (!state.creds.registered && !config.phoneNumber && qr) {
+      logger.info('Escaneie o QR code abaixo para conectar o WhatsApp:')
+      qrcode.generate(qr, { small: true })
+    }
+
     if (connection === 'open') {
       logger.info('Nyx-Bot conectado ao WhatsApp.')
       return
@@ -121,16 +145,6 @@ async function startBot() {
       }
     }
   })
-
-  if (!state.creds.registered && config.phoneNumber) {
-    await new Promise((resolve) => setTimeout(resolve, 3000))
-    const code = await sock.requestPairingCode(config.phoneNumber)
-    logger.info(`Pairing code: ${code}`)
-  }
-
-  if (!config.phoneNumber && !state.creds.registered) {
-    logger.warn('PHONE_NUMBER não configurado. Defina-o no .env para usar pairing code.')
-  }
 }
 
 startBot().catch((error) => {
