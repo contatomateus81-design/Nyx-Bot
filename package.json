@@ -1,0 +1,21 @@
+{
+  "name": "nyx-bot",
+  "version": "1.0.0",
+  "description": "Bot de WhatsApp MD para uso pessoal e em grupos.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^7.0.0",
+    "dotenv": "^17.2.2",
+    "pino": "^9.14.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
