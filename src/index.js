@@ -5,6 +5,7 @@ import makeWASocket, {
 } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
 import pino from 'pino'
+import readline from 'node:readline/promises'
 
 import { BOT_NAME, OWNER_NUMBERS, PHONE_NUMBER, PREFIX, SESSION_DIR } from './config.js'
 import { loadCommands } from './commands/loader.js'
@@ -16,14 +17,33 @@ import { isAutoAIEnabled } from './services/ai-mode.js'
 
 const logger = pino({ level: 'info' })
 
+async function askForPhoneNumber() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
+
+  try {
+    const answer = (await rl.question('🟣 Nyx ativada! Digite seu numero para conectar (555599999999): ')).trim()
+    return answer.replace(/\D/g, '')
+  } finally {
+    rl.close()
+  }
+}
+
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR)
   await initMemory()
 
-  if (!state.creds.registered && !PHONE_NUMBER) {
-    logger.error('PHONE_NUMBER não configurado em src/config.js.')
-    logger.error('Preencha o número internacional, somente números, e execute npm start novamente.')
-    return
+  let phoneNumber = PHONE_NUMBER
+
+  if (!state.creds.registered && !phoneNumber) {
+    phoneNumber = await askForPhoneNumber()
+
+    if (!phoneNumber) {
+      logger.error('Nenhum número informado. Execute npm start novamente.')
+      return
+    }
   }
 
   const commands = await loadCommands()
@@ -48,7 +68,7 @@ async function startBot() {
       pairingRequested = true
 
       try {
-        const code = await sock.requestPairingCode(PHONE_NUMBER)
+        const code = await sock.requestPairingCode(phoneNumber)
         logger.info('Pairing code: ' + code)
         logger.info('WhatsApp: Configurações > Dispositivos conectados > Conectar dispositivo > Conectar com número de telefone.')
       } catch (error) {
@@ -101,7 +121,7 @@ async function startBot() {
 
               await addMessage(jid, 'user', text)
               await addMessage(jid, 'assistant', answer)
-              await sock.sendMessage(jid, { text: '🟣 Nyx\n\n' + answer })
+              await sock.sendMessage(jid, { text: '🟣 Nyx\\n\\n' + answer })
             } catch (error) {
               logger.error({ err: error }, 'Erro no modo IA automático.')
             }
