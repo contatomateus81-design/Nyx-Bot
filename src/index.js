@@ -10,11 +10,15 @@ import pino from 'pino'
 import { config } from './config.js'
 import { loadCommands } from './commands/loader.js'
 import { getCommandText, parseCommand } from './utils/command.js'
+import { initMemory } from './services/memory.js'
+import { initReminders } from './services/reminders.js'
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(config.sessionDir)
+  await initMemory()
+
   const commands = await loadCommands()
   let pairingRequested = false
 
@@ -24,6 +28,8 @@ async function startBot() {
     markOnlineOnConnect: false,
     logger
   })
+
+  await initReminders((jid, content) => sock.sendMessage(jid, content))
 
   sock.ev.on('creds.update', saveCreds)
 
@@ -88,7 +94,7 @@ async function startBot() {
 
         const isGroup = jid.endsWith('@g.us')
         const sender = message.key.participant || message.key.remoteJid || ''
-        const senderNumber = sender.split('@')[0].replace(/\\D/g, '')
+        const senderNumber = sender.split('@')[0].replace(/\D/g, '')
         const isOwner = config.ownerNumbers.includes(senderNumber)
 
         if (command.ownerOnly && !isOwner) {
