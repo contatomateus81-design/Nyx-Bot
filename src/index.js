@@ -96,7 +96,7 @@ async function startBot() {
               const answer = await askAI({
                 prompt: text,
                 context: history,
-                system: 'Você é Nyx, um assistente de WhatsApp amigável, natural e objetivo. Responda em português do Brasil, a menos que o usuário peça outro idioma.'
+                system: 'Você é Nyx, uma persona feminina e uma assistente de WhatsApp amigável, natural e objetiva. Responda em português do Brasil, a menos que o usuário peça outro idioma.'
               })
 
               await addMessage(jid, 'user', text)
@@ -174,6 +174,6 @@ async function startBot() {
 }
 
 startBot().catch((error) => {
-  logger.error({ err: error }, 'Falha fatal ao iniciar o ${BOT_NAME}.')
+  logger.error({ err: error }, `Falha fatal ao iniciar o ${BOT_NAME}.`)
   process.exit(1)
 })
