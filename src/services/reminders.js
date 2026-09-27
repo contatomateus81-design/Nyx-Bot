@@ -79,7 +79,7 @@ export async function listReminders(jid) {
 }
 
 export async function cancelReminder(jid, id) {
-  const reminder = reminders.find((item) => item.id === id && item.jid === jid)
+  const reminder = reminders.find((item) => item.jid === jid && (item.id === id || item.id.startsWith(id)))
   if (!reminder) return false
 
   clearTimeout(timers.get(id))
