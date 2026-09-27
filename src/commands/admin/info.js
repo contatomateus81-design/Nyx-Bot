@@ -2,6 +2,7 @@ export default {
   name: 'grupo',
   aliases: ['groupinfo'],
   description: 'Mostra informações básicas do grupo.',
+  menuCategory: 'admin',
   adminOnly: true,
   groupOnly: true,
   execute: async ({ sock, jid, groupMetadata }) => {
@@ -11,7 +12,7 @@ export default {
         `│ Nome: ${groupMetadata.subject || 'Sem nome'}`,
         `│ Membros: ${groupMetadata.participants?.length || 0}`,
         '╰─────────────────╯'
-      ].join('\\n')
+      ].join('\n')
     })
   }
 }
