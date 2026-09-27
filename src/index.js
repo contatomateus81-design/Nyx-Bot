@@ -7,19 +7,18 @@ import { Boom } from '@hapi/boom'
 import qrcode from 'qrcode-terminal'
 import pino from 'pino'
 
-import { config } from './config.js'
+import { BOT_NAME, OWNER_NUMBERS, PHONE_NUMBER, PREFIX, SESSION_DIR } from './config.js'
 import { loadCommands } from './commands/loader.js'
 import { getCommandText, parseCommand } from './utils/command.js'
-import { initMemory } from './services/memory.js'
+import { initMemory, getHistory, addMessage } from './services/memory.js'
 import { initReminders } from './services/reminders.js'
 import { aiEnabled, askAI } from './services/ai.js'
-import { getHistory, addMessage } from './services/memory.js'
 import { isAutoAIEnabled } from './services/ai-mode.js'
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
 
 async function startBot() {
-  const { state, saveCreds } = await useMultiFileAuthState(config.sessionDir)
+  const { state, saveCreds } = await useMultiFileAuthState(SESSION_DIR)
   await initMemory()
 
   const commands = await loadCommands()
@@ -27,7 +26,7 @@ async function startBot() {
 
   const sock = makeWASocket({
     auth: state,
-    browser: Browsers.ubuntu('Nyx-Bot'),
+    browser: Browsers.ubuntu(BOT_NAME),
     markOnlineOnConnect: false,
     logger
   })
@@ -39,7 +38,7 @@ async function startBot() {
   sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
     if (
       !state.creds.registered &&
-      config.phoneNumber &&
+      PHONE_NUMBER &&
       !pairingRequested &&
       (connection === 'connecting' || qr)
     ) {
@@ -60,7 +59,7 @@ async function startBot() {
     }
 
     if (connection === 'open') {
-      logger.info('Nyx-Bot conectado ao WhatsApp.')
+      logger.info('${BOT_NAME} conectado ao WhatsApp.')
       return
     }
 
@@ -89,7 +88,7 @@ async function startBot() {
         if (!jid) continue
 
         const text = getCommandText(message)
-        const commandData = parseCommand(text, config.prefix)
+        const commandData = parseCommand(text, PREFIX)
         if (!commandData) {
           if (isAutoAIEnabled() && aiEnabled() && !jid.endsWith('@g.us') && text) {
             try {
@@ -116,10 +115,10 @@ async function startBot() {
         const isGroup = jid.endsWith('@g.us')
         const sender = message.key.participant || message.key.remoteJid || ''
         const senderNumber = sender.split('@')[0].replace(/\D/g, '')
-        const isOwner = config.ownerNumbers.includes(senderNumber)
+        const isOwner = OWNER_NUMBERS.includes(senderNumber)
 
         if (command.ownerOnly && !isOwner) {
-          await sock.sendMessage(jid, { text: '⛔ Este comando é exclusivo do dono do bot.' })
+          await sock.sendMessage(jid, { text: '⛔ Este comando é exclusivo do dono da Nyx.' })
           continue
         }
 
@@ -175,6 +174,6 @@ async function startBot() {
 }
 
 startBot().catch((error) => {
-  logger.error({ err: error }, 'Falha fatal ao iniciar o Nyx-Bot.')
+  logger.error({ err: error }, 'Falha fatal ao iniciar o ${BOT_NAME}.')
   process.exit(1)
 })
