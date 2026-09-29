@@ -4,7 +4,8 @@ import android.speech.tts.TextToSpeech
 import java.util.Locale
 class AndroidTextToSpeechProvider(context:Context):TextToSpeechProvider{
  private var ready=false
- private val tts=TextToSpeech(context){s->ready=s==TextToSpeech.SUCCESS;if(ready)tts.language=Locale("pt","BR")}
+ private lateinit var tts:TextToSpeech
+ init{tts=TextToSpeech(context){s->ready=s==TextToSpeech.SUCCESS;if(ready)tts.language=Locale("pt","BR")}}
  override fun speak(text:String,onDone:()->Unit,onError:(String)->Unit){
   if(!ready){onError("Síntese de voz ainda não está pronta.");return}
   val id="nyx-"+System.nanoTime()
