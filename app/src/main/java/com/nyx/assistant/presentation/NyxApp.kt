@@ -3,7 +3,6 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +17,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,17 +25,17 @@ import com.nyx.assistant.domain.*
  var permissionAsked by remember{mutableStateOf(false)}
  val launcher=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){permissionAsked=true}
  LaunchedEffect(Unit){if(!permissionAsked && Build.VERSION.SDK_INT>=23)launcher.launch(Manifest.permission.RECORD_AUDIO)}
- NyxTheme{Surface(modifier=Modifier.fillMaxSize()){Home(vm)}}
+ NyxTheme{Surface(Modifier.fillMaxSize()){Home(vm)}}
 }
 @Composable private fun Home(vm:MainViewModel){
  val messages by vm.messages.collectAsState();val state by vm.state.collectAsState();val draft by vm.draft.collectAsState()
- Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(16.dp)){
+ Column(Modifier.fillMaxSize().padding(16.dp)){
   Text("Nyx",style=MaterialTheme.typography.headlineLarge,fontWeight=FontWeight.Bold,color=MaterialTheme.colorScheme.primary)
   Text(statusText(state),color=MaterialTheme.colorScheme.onSurfaceVariant)
   Spacer(Modifier.height(12.dp))
   Box(Modifier.fillMaxWidth().weight(1f),contentAlignment=Alignment.BottomCenter){
    if(messages.isEmpty())EmptyGreeting()
-   else LazyColumn(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(8.dp)){items(messages,key{it.id}){MessageBubble(it)}}
+   else LazyColumn(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(8.dp)){items(messages,key={it.id}){MessageBubble(it)}}
   }
   Spacer(Modifier.height(12.dp))
   Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){
