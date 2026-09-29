@@ -1,9 +1,9 @@
 package com.nyx.assistant.presentation
 import android.Manifest
+import android.content.Context
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,14 +21,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nyx.assistant.domain.*
+import com.nyx.assistant.services.VoiceServiceController
 @Composable fun NyxApp(vm:MainViewModel=hiltViewModel()){
- var permissionAsked by remember{mutableStateOf(false)}
- val launcher=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){permissionAsked=true}
- LaunchedEffect(Unit){if(!permissionAsked && Build.VERSION.SDK_INT>=23)launcher.launch(Manifest.permission.RECORD_AUDIO)}
+ val micLauncher=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){}
+ val notificationLauncher=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){}
+ LaunchedEffect(Unit){if(Build.VERSION.SDK_INT>=33)notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);micLauncher.launch(Manifest.permission.RECORD_AUDIO)}
  NyxTheme{Surface(Modifier.fillMaxSize()){Home(vm)}}
 }
 @Composable private fun Home(vm:MainViewModel){
  val messages by vm.messages.collectAsState();val state by vm.state.collectAsState();val draft by vm.draft.collectAsState()
+ val context=androidx.compose.ui.platform.LocalContext.current
  Column(Modifier.fillMaxSize().padding(16.dp)){
   Text("Nyx",style=MaterialTheme.typography.headlineLarge,fontWeight=FontWeight.Bold,color=MaterialTheme.colorScheme.primary)
   Text(statusText(state),color=MaterialTheme.colorScheme.onSurfaceVariant)
@@ -44,7 +46,10 @@ import com.nyx.assistant.domain.*
   }
   Spacer(Modifier.height(10.dp))
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center){
-   FilledIconButton(onClick={if(state==ConversationState.LISTENING)vm.stopListening() else vm.startListening()},modifier=Modifier.size(76.dp),shape=CircleShape){
+   FilledIconButton(onClick={
+    if(state==ConversationState.LISTENING){vm.stopListening();VoiceServiceController.stop(context)}
+    else{VoiceServiceController.start(context);vm.startListening()}
+   },modifier=Modifier.size(76.dp),shape=CircleShape){
     Icon(if(state==ConversationState.LISTENING)Icons.Default.Stop else Icons.Default.Mic,"Microfone",Modifier.size(34.dp))
    }
   }
