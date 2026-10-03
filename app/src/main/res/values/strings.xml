@@ -1,6 +1,0 @@
-<resources>
-<string name="app_name">Nyx</string>
-<string name="accessibility_description">Integração opcional e transparente da Nyx com ações solicitadas pelo usuário.</string>
-<string name="channel_voice_name">Nyx — voz</string>
-<string name="channel_voice_description">Indica quando a Nyx está usando o microfone.</string>
-</resources>
