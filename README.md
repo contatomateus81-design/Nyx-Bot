@@ -1,6 +1,6 @@
 # RF Imports — vitrine inicial
 
-Site responsivo de vitrine de produtos para a RF Imports, com identidade visual preta e dourada inspirada na logo enviada.
+Site responsivo de vitrine para a RF Imports, focado em beleza importada do Paraguai: batons, maquiagens, shampoos, condicionadores e cuidados pessoais. Identidade visual preta e dourada inspirada na logo enviada.
 
 ## Arquivos
 - `index.html` — estrutura da página.
@@ -10,7 +10,7 @@ Site responsivo de vitrine de produtos para a RF Imports, com identidade visual 
 ## Personalizar os produtos
 Abra `script.js` e edite a lista `products`. Cada item aceita:
 - `name`: nome do produto
-- `category`: `eletronicos`, `acessorios` ou `outros`
+- `category`: `maquiagem`, `cabelos` ou `cuidados`
 - `categoryLabel`: categoria exibida
 - `description`: descrição curta
 - `price`: preço ou “Consulte o valor”
@@ -25,4 +25,4 @@ A logo enviada deve ser adicionada ao repositório como arquivo de imagem se qui
 ## Publicação
 Como esta versão usa HTML, CSS e JavaScript puros, pode ser publicada em hospedagem estática (por exemplo, GitHub Pages ou Vercel) sem etapa de build.
 
-> Os produtos atuais são exemplos visuais. Substitua pelos produtos reais, preços, fotos e condições antes de divulgar a loja.
+> Os produtos atuais são exemplos visuais. Substitua pelos produtos reais, marcas, preços, fotos e condições antes de divulgar a loja. Não anuncie certificações, procedência específica ou promessas de segurança sem poder confirmá-las.
