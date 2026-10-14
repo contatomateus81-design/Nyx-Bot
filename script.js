@@ -1,14 +1,14 @@
 /*
-  RF Imports — catálogo inicial
-  Edite os produtos abaixo para atualizar a vitrine.
+  RF Imports — catálogo de beleza
+  Edite os produtos abaixo para atualizar a vitrine de beleza.
   Para ativar o WhatsApp, preencha WHATSAPP_NUMBER com DDI + DDD + número,
   somente dígitos (ex.: 5554999999999).
 */
 const WHATSAPP_NUMBER = "";
 const products = [
-  { id: 1, name: "Produto em destaque", category: "eletronicos", categoryLabel: "Eletrônicos", description: "Adicione aqui uma descrição curta e os detalhes importantes.", price: "Consulte o valor", image: "" },
-  { id: 2, name: "Novidade da semana", category: "acessorios", categoryLabel: "Acessórios", description: "Um espaço para apresentar um produto que seus clientes vão amar.", price: "Consulte o valor", image: "" },
-  { id: 3, name: "Mais uma escolha especial", category: "outros", categoryLabel: "Destaques", description: "Troque este exemplo por um produto disponível na loja.", price: "Consulte o valor", image: "" }
+  { id: 1, name: "Batons importados", category: "maquiagem", categoryLabel: "Maquiagem", description: "Cores e acabamentos para combinar com o seu estilo.", price: "Consulte o valor", image: "" },
+  { id: 2, name: "Shampoo e condicionador", category: "cabelos", categoryLabel: "Cabelos", description: "Cuidados para completar sua rotina capilar.", price: "Consulte o valor", image: "" },
+  { id: 3, name: "Maquiagem e cuidados", category: "cuidados", categoryLabel: "Cuidados", description: "Descubra opções de beleza selecionadas pela RF Imports., price: "Consulte o valor", image: "" }
 ];
 const grid = document.querySelector("#product-grid");
 const emptyState = document.querySelector("#empty-state");
